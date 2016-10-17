@@ -51,7 +51,7 @@ Assume the following file:
     
 Running
 
-    gotodo <path to file>
+    gotodo <paths to files or dirs>
     
 will give
 
@@ -70,7 +70,7 @@ will give
 
 Running
 
-    gotodo -a asticode <path to file>
+    gotodo -a asticode <paths to files or dirs>
     
 will give
 
