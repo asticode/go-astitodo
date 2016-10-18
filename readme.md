@@ -6,7 +6,7 @@ I use inline TODOs a lot in my code and needed a way to print all TODOs easily, 
 
 Run 
 
-    go get github.com/asticode/gotodo && go install
+    go get github.com/asticode/gotodo && go install github.com/asticode/gotodo
     
 # Usage
 
