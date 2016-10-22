@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -15,7 +15,6 @@ import (
 var (
 	// Flags
 	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
-	noSkip   = flag.Bool("no-skip", false, "If true, no directories are skipped")
 	verbose  = flag.Bool("v", false, "If true, then verbose")
 
 	// Others
@@ -58,48 +57,38 @@ type TODO struct {
 
 // ProcessPath processes a path which can be either a directory or a file
 func ProcessPath(path string) (todos []*TODO, err error) {
-	// Log
-	if *verbose {
-		log.Printf("Processing path %s\n", path)
-	}
+	// Walk the path
+	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		// Log
+		if *verbose {
+			log.Printf("Processing path %s\n", path)
+		}
 
-	// Stat path
-	var file os.FileInfo
-	if file, err = os.Stat(path); err != nil {
-		return
-	}
-
-	// Directory
-	if file.IsDir() {
-		// Skip some directories
-		if !*noSkip && (file.Name() == "vendor" || (len(file.Name()) > 1 && file.Name()[0] == '.')) {
-			if *verbose {
-				log.Printf("Skipping directory %s\n", path)
+		// Check whether file is a dir
+		if info.IsDir() {
+			// Skip vendor and all directories beginning with a .
+			if info.Name() == "vendor" || (len(info.Name()) > 1 && info.Name()[0] == '.') {
+				if *verbose {
+					log.Printf("Skipping path %s\n", path)
+				}
+				return filepath.SkipDir
 			}
-			return
-		}
-
-		// Read dir
-		var files []os.FileInfo
-		if files, err = ioutil.ReadDir(path); err != nil {
-			return
-		}
-
-		// Process each file
-		var fileTODOs []*TODO
-		for _, file := range files {
-			if fileTODOs, err = ProcessPath(path + string(os.PathSeparator) + file.Name()); err != nil {
-				return
+		} else {
+			// Process file and add the todos
+			var t []*TODO
+			if t, err = ProcessFile(path); err != nil {
+				return err
 			}
-			todos = append(todos, fileTODOs...)
+			todos = append(todos, t...)
 		}
-	} else {
-		todos, err = ProcessFile(path)
-	}
+		return nil
+	})
 	return
 }
 
 // ProcessFile processes a file and extract its TODOs
+// TODO Manipulate the AST
+// TODO Parse /* */ as well
 func ProcessFile(path string) (todos []*TODO, err error) {
 	// Open file
 	var file *os.File
