@@ -7,20 +7,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 )
 
-// Constants
-const (
-	printFormat = `Message: %s
-File: %s:%d
-
-`
-)
-
-// Flags
+// Vars
 var (
-	verbose = flag.Bool("v", false, "If true, then verbose")
+	// Flags
+	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
+	noSkip   = flag.Bool("no-skip", false, "If true, no directories are skipped")
+	verbose  = flag.Bool("v", false, "If true, then verbose")
+
+	// Others
+	regexpAssignee = regexp.MustCompile("^\\([\\w ]+\\)")
 )
 
 func main() {
@@ -38,16 +37,23 @@ func main() {
 
 		// Display results
 		for _, t := range todos {
-			fmt.Printf(printFormat, strings.Join(t.Message, "\n"), t.Path, t.Line)
+			if *assignee == "" || *assignee == t.Assignee {
+				if t.Assignee != "" {
+					fmt.Printf("Assignee: %s\n", t.Assignee)
+				}
+				fmt.Printf("Message: %s\n", strings.Join(t.Message, "\n"))
+				fmt.Printf("File: %s:%d\n\n", t.Path, t.Line)
+			}
 		}
 	}
 }
 
 // TODO represents a todo
 type TODO struct {
-	Line    int
-	Message []string
-	Path    string
+	Assignee string
+	Line     int
+	Message  []string
+	Path     string
 }
 
 // ProcessPath processes a path which can be either a directory or a file
@@ -65,8 +71,8 @@ func ProcessPath(path string) (todos []*TODO, err error) {
 
 	// Directory
 	if file.IsDir() {
-		// Blacklist some directories
-		if file.Name() == "vendor" || file.Name()[0] == '.' {
+		// Skip some directories
+		if !*noSkip && (file.Name() == "vendor" || (len(file.Name()) > 1 && file.Name()[0] == '.')) {
 			if *verbose {
 				log.Printf("Skipping directory %s\n", path)
 			}
@@ -114,13 +120,18 @@ func ProcessFile(path string) (todos []*TODO, err error) {
 
 		// To do found
 		if len(line) >= 7 && line[:7] == "// TODO" {
-			TODOFound = true
 			todo = &TODO{
-				Line:    lineCount,
-				Message: []string{strings.TrimSpace(line[7:])},
-				Path:    path,
+				Line: lineCount,
+				Path: path,
 			}
+			line = strings.TrimSpace(line[7:])
+			if todo.Assignee = regexpAssignee.FindString(line); todo.Assignee != "" {
+				line = strings.TrimSpace(line[len(todo.Assignee):])
+				todo.Assignee = todo.Assignee[1 : len(todo.Assignee)-1]
+			}
+			todo.Message = append(todo.Message, line)
 			todos = append(todos, todo)
+			TODOFound = true
 		} else if TODOFound && len(line) >= 4 && line[:3] == "// " {
 			todo.Message = append(todo.Message, strings.TrimSpace(line[3:]))
 		} else {
