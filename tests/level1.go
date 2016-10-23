@@ -9,6 +9,7 @@ func MyFirstFunction() {
 func MySecondFunction() {
 	// This is a dummy comment
 	// TODO This is a tabbed TODO
+	// TODO this a second todo in the same comment group
 
 	// This is another dummy comment
 	var b = 2
