@@ -74,6 +74,14 @@ func ProcessPath(path string) (todos []*TODO, err error) {
 				return filepath.SkipDir
 			}
 		} else {
+			// Only process go files
+			if filepath.Ext(path) != ".go" {
+				if *verbose {
+					log.Printf("Skipping path %s\n", path)
+				}
+				return nil
+			}
+
 			// Process file and add the todos
 			var t []*TODO
 			if t, err = ProcessFile(path); err != nil {
