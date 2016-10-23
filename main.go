@@ -1,9 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"log"
 	"os"
 	"path/filepath"
@@ -41,7 +43,7 @@ func main() {
 					fmt.Printf("Assignee: %s\n", t.Assignee)
 				}
 				fmt.Printf("Message: %s\n", strings.Join(t.Message, "\n"))
-				fmt.Printf("File: %s:%d\n\n", t.Path, t.Line)
+				fmt.Printf("File: %s:%d\n\n", t.Filename, t.Line)
 			}
 		}
 	}
@@ -50,12 +52,12 @@ func main() {
 // TODO represents a todo
 type TODO struct {
 	Assignee string
+	Filename string
 	Line     int
 	Message  []string
-	Path     string
 }
 
-// ProcessPath processes a path which can be either a directory or a file
+// ProcessPath processes a path
 func ProcessPath(path string) (todos []*TODO, err error) {
 	// Walk the path
 	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -95,44 +97,55 @@ func ProcessPath(path string) (todos []*TODO, err error) {
 }
 
 // ProcessFile processes a file and extract its TODOs
-// TODO Manipulate the AST
-// TODO Parse /* */ as well
 func ProcessFile(path string) (todos []*TODO, err error) {
-	// Open file
-	var file *os.File
-	if file, err = os.Open(path); err != nil {
+	// Parse file and create the AST
+	var fset = token.NewFileSet()
+	var f *ast.File
+	if f, err = parser.ParseFile(fset, path, nil, parser.ParseComments); err != nil {
 		return
 	}
-	scanner := bufio.NewScanner(file)
 
-	// Scan
-	var line string
-	var lineCount int
-	var todo *TODO
-	var TODOFound bool
-	for scanner.Scan() {
-		// Fetch line
-		line = strings.TrimSpace(scanner.Text())
-		lineCount++
+	// Loop in nodes after grouping comment groups by nodes
+	for _, cgs := range ast.NewCommentMap(fset, f, f.Comments) {
+		// Loop in comment groups
+		var todo *TODO
+		var TODOFound bool
+		for _, cg := range cgs {
+			// Loop in comments
+			for _, c := range cg.List {
+				// Loop in lines
+				for i, l := range strings.Split(c.Text, "\n") {
+					// Init text
+					var t = strings.TrimSpace(l)
+					if len(t) >= 2 && (t[:2] == "//" || t[:2] == "/*" || t[:2] == "*/") {
+						t = strings.TrimSpace(t[2:])
+					}
 
-		// To do found
-		if len(line) >= 7 && line[:7] == "// TODO" {
-			todo = &TODO{
-				Line: lineCount,
-				Path: path,
+					// To do found
+					if len(t) >= 4 && strings.ToLower(t[:4]) == "todo" {
+						// Init to do
+						todo = &TODO{Filename: path, Line: fset.Position(c.Slash).Line + i}
+						t = strings.TrimSpace(t[4:])
+
+						// Look for assignee
+						if todo.Assignee = regexpAssignee.FindString(t); todo.Assignee != "" {
+							t = strings.TrimSpace(t[len(todo.Assignee):])
+							todo.Assignee = todo.Assignee[1 : len(todo.Assignee)-1]
+						}
+
+						// Append text
+						todo.Message = append(todo.Message, t)
+						todos = append(todos, todo)
+						TODOFound = true
+					} else if TODOFound {
+						if len(t) > 0 {
+							todo.Message = append(todo.Message, t)
+						}
+					} else {
+						TODOFound = false
+					}
+				}
 			}
-			line = strings.TrimSpace(line[7:])
-			if todo.Assignee = regexpAssignee.FindString(line); todo.Assignee != "" {
-				line = strings.TrimSpace(line[len(todo.Assignee):])
-				todo.Assignee = todo.Assignee[1 : len(todo.Assignee)-1]
-			}
-			todo.Message = append(todo.Message, line)
-			todos = append(todos, todo)
-			TODOFound = true
-		} else if TODOFound && len(line) >= 4 && line[:3] == "// " {
-			todo.Message = append(todo.Message, strings.TrimSpace(line[3:]))
-		} else {
-			TODOFound = false
 		}
 	}
 	return
