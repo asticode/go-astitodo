@@ -134,7 +134,7 @@ func ProcessFile(path string) (todos []*TODO, err error) {
 		return
 	}
 
-	// Loop in comments
+	// Loop in comment groups
 	for _, cg := range f.Comments {
 		// Loop in comments
 		var todo *TODO
