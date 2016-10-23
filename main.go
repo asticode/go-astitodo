@@ -34,7 +34,7 @@ var (
 	verbose  = flag.Bool("v", false, "If true, then verbose")
 
 	// Others
-	regexpAssignee = regexp.MustCompile("^\\([\\w ]+\\)")
+	regexpAssignee = regexp.MustCompile("^\\([\\w \\._\\+\\-@]+\\)")
 )
 
 func main() {

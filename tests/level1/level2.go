@@ -8,12 +8,12 @@ var dumdum int /*
 func MyFirstFunction() {
 	var a = 1
 	a++
-	// todo(quentin renard) This is a named TODO
+	// todo(my.weird-email_address+1@email.com) This is a named TODO
 	var c = 3
 	c++
 }
 
-// Todo Here is another
+// Todo(quentin renard) Here is another
 // multi line todo
 func MySecondFunction() {
 	var b = 2
