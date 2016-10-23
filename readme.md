@@ -2,6 +2,8 @@
 
 I use inline TODOs a lot in my code and needed a way to print all TODOs easily, so I created `gotodo`
 
+It parses the comments from the AST and extract their TODOs. It can provide valuable information such as the TODO's assignee which can be filtered afterwards
+
 # Install
 
 Run 
@@ -13,8 +15,8 @@ Run
     Usage of gotodo:
         -a string
             Only TODOs assigned to this username will be displayed
-        -no-skip
-            If true, no directories are skipped
+        -e
+            Path that will be excluded from the process
         -v    If true, then verbose
         
 # Formatting
@@ -77,6 +79,12 @@ will give
     Assignee: asticode
     Message: This variable should be dropped
     File: mypackage/main.go:6
+ 
+## Exclude paths
+    
+You can exclude paths running
+
+    gotodo -e path/to/exclude/1 -e path/to/exclude/2 <paths to files or dirs>
     
 # Contributions
 

@@ -13,10 +13,24 @@ import (
 	"strings"
 )
 
+type flagArray []string
+
+func (f *flagArray) String() string {
+	return strings.Join(*f, ",")
+}
+
+func (f *flagArray) Set(i string) error {
+	*f = append(*f, i)
+	return nil
+}
+
+var myFlags flagArray
+
 // Vars
 var (
 	// Flags
 	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
+	exclude  = flagArray{}
 	verbose  = flag.Bool("v", false, "If true, then verbose")
 
 	// Others
@@ -25,6 +39,7 @@ var (
 
 func main() {
 	// Parse flags
+	flag.Var(&exclude, "e", "Path that will be excluded from the process")
 	flag.Parse()
 
 	// Loop through paths
@@ -64,6 +79,20 @@ func ProcessPath(path string) (todos []*TODO, err error) {
 		// Log
 		if *verbose {
 			log.Printf("Processing path %s\n", path)
+		}
+
+		// Check exclude list
+		for _, p := range exclude {
+			if p == path {
+				if *verbose {
+					log.Printf("Skipping path %s\n", path)
+				}
+				if info.IsDir() {
+					return filepath.SkipDir
+				} else {
+					return nil
+				}
+			}
 		}
 
 		// Check whether file is a dir
