@@ -8,7 +8,7 @@ It parses the comments from the AST and extract their TODOs. It can provide valu
 
 Run 
 
-    go get github.com/asticode/gotodo && go install github.com/asticode/gotodo
+    go get github.com/asticode/gotodo && go build -o $GOPATH/bin/gotodo github.com/asticode/gotodo/cmd
     
 # Usage
 
