@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/asticode/gotodo"
+	"github.com/asticode/go-astitodo"
 )
 
 type flagArray []string
@@ -36,9 +36,9 @@ func main() {
 	// Loop through paths
 	for _, path := range flag.Args() {
 		// Process path
-		var todos todo.TODOs
+		var todos astitodo.TODOs
 		var err error
-		if todos, err = todo.Extract(path, exclude...); err != nil {
+		if todos, err = astitodo.Extract(path, exclude...); err != nil {
 			log.Fatal(err)
 		}
 
