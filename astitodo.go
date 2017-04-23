@@ -1,4 +1,4 @@
-package todo
+package astitodo
 
 import (
 	"go/ast"

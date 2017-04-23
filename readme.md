@@ -1,6 +1,6 @@
 # About
 
-I use inline TODOs a lot in my code and needed a way to print all TODOs easily, so I created `gotodo`
+I use inline TODOs a lot in my code and needed a way to print all TODOs easily, so I created `astitodo`
 
 It parses the comments from the AST and extract their TODOs. It can provide valuable information such as the TODO's assignee which can be filtered afterwards
 
@@ -8,16 +8,16 @@ It parses the comments from the AST and extract their TODOs. It can provide valu
 
 Run 
 
-    go get github.com/asticode/gotodo && go build -o $GOPATH/bin/gotodo github.com/asticode/gotodo/cmd
+    go get github.com/asticode/go-astitodo && go build -o $GOPATH/bin/astitodo github.com/asticode/go-astitodo/cmd
     
 # Usage
 
-    Usage of gotodo:
+    Usage of go-astitodo:
         -a string
             Only TODOs assigned to this username will be displayed
         -e
             Path that will be excluded from the process
-        -v    If true, then verbose
+        -v  If true, then verbose
         
 # Formatting
 
@@ -53,7 +53,7 @@ Assume the following file:
     
 Running
 
-    gotodo <paths to files or dirs>
+    go-astitodo <paths to files or dirs>
     
 will give
 
@@ -72,7 +72,7 @@ will give
 
 Running
 
-    gotodo -a asticode <paths to files or dirs>
+    go-astitodo -a asticode <paths to files or dirs>
     
 will give
 
@@ -84,7 +84,7 @@ will give
     
 You can exclude paths running
 
-    gotodo -e path/to/exclude/1 -e path/to/exclude/2 <paths to files or dirs>
+    go-astitodo -e path/to/exclude/1 -e path/to/exclude/2 <paths to files or dirs>
     
 # Contributions
 
