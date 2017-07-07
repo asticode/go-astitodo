@@ -23,6 +23,8 @@ Run
             Only TODOs assigned to this username will be displayed
         -e
             Path that will be excluded from the process
+        -f string
+            Format to use when outputting TODOs (supported formats: text, csv) (default "text")
         -v  If true, then verbose
         
 # Formatting
@@ -91,6 +93,12 @@ will output
 You can exclude paths by running
 
     go-astitodo -e path/to/exclude/1 -e path/to/exclude/2 <paths to files or dirs>
+
+## Change output format
+
+You can output CSV by running
+
+    go-astitodo -f csv <path to files or dirs>
     
 # Contributions
 

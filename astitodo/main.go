@@ -25,6 +25,7 @@ var myFlags flagArray
 // Flags
 var (
 	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
+	format   = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv)")
 	exclude  = flagArray{}
 )
 
@@ -42,15 +43,26 @@ func main() {
 			log.Fatal(err)
 		}
 
-		// Display results
-		for _, t := range todos {
-			if *assignee == "" || *assignee == t.Assignee {
-				if t.Assignee != "" {
-					fmt.Printf("Assignee: %s\n", t.Assignee)
+		// Filter results for assignee
+		var filteredTODOs = todos
+		if *assignee != "" {
+			filteredTODOs = astitodo.TODOs{}
+
+			for _, t := range todos {
+				if *assignee == t.Assignee {
+					filteredTODOs = append(filteredTODOs, t)
 				}
-				fmt.Printf("Message: %s\n", strings.Join(t.Message, "\n"))
-				fmt.Printf("File: %s:%d\n\n", t.Filename, t.Line)
 			}
+		}
+
+		// Handle selected format
+		switch *format {
+		case "text":
+			fmt.Print(formatText(filteredTODOs))
+		case "csv":
+			fmt.Print(formatCSV(filteredTODOs))
+		default:
+			log.Fatalf("unsupported format: %s", *format)
 		}
 	}
 }
