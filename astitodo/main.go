@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"io"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/asticode/go-astitodo"
@@ -26,6 +27,7 @@ var myFlags flagArray
 var (
 	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
 	format   = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv)")
+	output   = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
 	exclude  = flagArray{}
 )
 
@@ -44,23 +46,36 @@ func main() {
 		}
 
 		// Filter results for assignee
-		var filteredTODOs = todos
 		if *assignee != "" {
-			filteredTODOs = astitodo.TODOs{}
+			todos = todos.AssignedTo(*assignee)
+		}
 
-			for _, t := range todos {
-				if *assignee == t.Assignee {
-					filteredTODOs = append(filteredTODOs, t)
-				}
+		var writer io.Writer
+
+		// Convert selected output into a writer
+		switch *output {
+		case "stdout":
+			writer = os.Stdout
+		case "stderr":
+			writer = os.Stderr
+		default:
+			if writer, err = os.OpenFile(*output, os.O_WRONLY|os.O_CREATE, 0666); err != nil {
+				log.Fatal(err)
 			}
+
+			defer writer.(*os.File).Close()
 		}
 
 		// Handle selected format
 		switch *format {
 		case "text":
-			fmt.Print(formatText(filteredTODOs))
+			if err = todos.WriteText(writer); err != nil {
+				log.Fatal(err)
+			}
 		case "csv":
-			fmt.Print(formatCSV(filteredTODOs))
+			if err = todos.WriteCSV(writer); err != nil {
+				log.Fatal(err)
+			}
 		default:
 			log.Fatalf("unsupported format: %s", *format)
 		}

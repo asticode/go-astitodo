@@ -25,6 +25,8 @@ Run
             Path that will be excluded from the process
         -f string
             Format to use when outputting TODOs (supported formats: text, csv) (default "text")
+        -o string
+            Destination for output (can be stdout, stderr or a file) (default "stdout")
         -v  If true, then verbose
         
 # Formatting
@@ -99,6 +101,12 @@ You can exclude paths by running
 You can output CSV by running
 
     go-astitodo -f csv <path to files or dirs>
+
+## Output to a file
+
+You can output to a file by running
+
+    go-astitodo -o <path to output file> <path to files or dirs>
     
 # Contributions
 
