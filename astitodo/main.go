@@ -5,30 +5,17 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/asticode/go-astitodo"
+	"github.com/asticode/go-astitools/flag"
 )
-
-type flagArray []string
-
-func (f *flagArray) String() string {
-	return strings.Join(*f, ",")
-}
-
-func (f *flagArray) Set(i string) error {
-	*f = append(*f, i)
-	return nil
-}
-
-var myFlags flagArray
 
 // Flags
 var (
 	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
 	format   = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv)")
 	output   = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
-	exclude  = flagArray{}
+	exclude  = astiflag.Strings{}
 )
 
 func main() {
