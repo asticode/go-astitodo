@@ -1,12 +1,16 @@
 package astitodo
 
 import (
+	"encoding/csv"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -110,5 +114,61 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 			}
 		}
 	}
+	return
+}
+
+// AssignedTo returns TODOs which are assigned to the specified assignee
+func (todos TODOs) AssignedTo(assignee string) (filteredTODOs TODOs) {
+	for _, t := range todos {
+		if assignee == t.Assignee {
+			filteredTODOs = append(filteredTODOs, t)
+		}
+	}
+
+	return
+}
+
+// WriteText writes the TODOs as text to the specified writer
+func (todos TODOs) WriteText(w io.Writer) (err error) {
+	for _, t := range todos {
+		if t.Assignee != "" {
+			if _, err = io.WriteString(w, fmt.Sprintf("Assignee: %s\n", t.Assignee)); err != nil {
+				return
+			}
+		}
+
+		if _, err = io.WriteString(w, fmt.Sprintf("Message: %s\nFile:%s:%d\n\n", strings.Join(t.Message, "\n"), t.Filename, t.Line)); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// WriteCSV writes the TODOs as CSV to the specified writer
+// The columns are "Filename", "Line", "Assignee" and "Message" (which can contain newlines)
+func (todos TODOs) WriteCSV(w io.Writer) (err error) {
+	var c = csv.NewWriter(w)
+
+	// Write the headings for the document
+	if err = c.Write([]string{"Filename", "Line", "Assignee", "Message"}); err != nil {
+		return
+	}
+
+	for _, t := range todos {
+		err = c.Write([]string{
+			t.Filename,
+			strconv.Itoa(t.Line),
+			t.Assignee,
+			strings.Join(t.Message, "\n"),
+		})
+
+		if err != nil {
+			return
+		}
+	}
+
+	c.Flush()
+
 	return
 }
