@@ -39,9 +39,8 @@ func (todos *TODOs) extract(path string, excludedPaths ...string) error {
 			if p == path {
 				if info.IsDir() {
 					return filepath.SkipDir
-				} else {
-					return nil
 				}
+				return nil
 			}
 		}
 
