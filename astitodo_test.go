@@ -41,10 +41,15 @@ func TestProcessPath(t *testing.T) {
 			Message:  []string{"this a second todo in the same comment group"},
 			Filename: "tests/level1.go",
 		},
+		{
+			Line:     19,
+			Message:  []string{"Please delete me!"},
+			Filename: "tests/level1.go",
+		},
 	}
 
 	todos, err := astitodo.Extract("tests", "tests/excluded.go")
 	assert.NoError(t, err)
-	assert.Len(t, todos, 6)
+	assert.Len(t, todos, 7)
 	assert.Equal(t, expected, todos)
 }

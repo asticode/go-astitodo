@@ -15,3 +15,6 @@ func MySecondFunction() {
 	var b = 2
 	b++
 }
+
+// FIXME Please delete me!
+var DeleteMe = 5
