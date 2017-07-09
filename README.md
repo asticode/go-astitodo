@@ -14,7 +14,7 @@ This is also a good start for people who want to use AST.
 
 Run 
 
-    $ go get -u github.com/asticode/go-astitodo
+    $ go get -u github.com/asticode/go-astitodo/...
     
 # Usage
 
