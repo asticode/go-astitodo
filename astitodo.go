@@ -17,6 +17,8 @@ import (
 // Vars
 var (
 	regexpAssignee = regexp.MustCompile("^\\([\\w \\._\\+\\-@]+\\)")
+
+	todoIdentifiers = []string{"TODO", "FIXME"}
 )
 
 // TODOs represents a set of todos
@@ -91,10 +93,10 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 				}
 
 				// To do found
-				if strings.HasPrefix(strings.ToLower(t), "todo") {
+				if length, isTodo := isTodoIdentifier(t); isTodo {
 					// Init to do
 					todo = &TODO{Filename: filename, Line: fset.Position(c.Slash).Line + i}
-					t = strings.TrimSpace(t[4:])
+					t = strings.TrimSpace(t[length:])
 
 					// Look for assignee
 					if todo.Assignee = regexpAssignee.FindString(t); todo.Assignee != "" {
@@ -115,6 +117,15 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 		}
 	}
 	return
+}
+
+func isTodoIdentifier(s string) (int, bool) {
+	for _, indent := range todoIdentifiers {
+		if strings.HasPrefix(strings.ToUpper(s), indent) {
+			return len(indent), true
+		}
+	}
+	return 0, false
 }
 
 // AssignedTo returns TODOs which are assigned to the specified assignee
