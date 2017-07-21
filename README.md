@@ -54,6 +54,9 @@ Assume the following file:
     // TODO(asticode) This variable should be dropped
     var myvariable int
     
+    // TODO(username) This should be renamed
+    var oops bool
+
     // TODO Damn this function should be rewritten
     // Or maybe it should be dropped as well
     func UselessFunction() {
@@ -74,9 +77,13 @@ will give
     Message: This variable should be dropped
     File: mypackage/main.go:6
     
+    Assignee: username
+    Message: This variable should be renamed
+    File: mypackage/main.go:9
+
     Message: Damn this function should be rewritten
     Or maybe it should be dropped  as well
-    File: mypackage/main.go:9
+    File: mypackage/main.go:12
     
 ## Filter by assignee
 
@@ -89,7 +96,18 @@ will output
     Assignee: asticode
     Message: This variable should be dropped
     File: mypackage/main.go:6
- 
+
+## Filter by multiple assignees
+
+
+    Assignee: asticode
+    Message: This variable should be dropped
+    File: mypackage/main.go:6
+
+    Assignee: username
+    Message: This variable should be renamed
+    File: mypackage/main.go:9
+
 ## Exclude paths
     
 You can exclude paths by running
