@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/asticode/go-astitodo"
 	"github.com/asticode/go-astitools/flag"
@@ -34,7 +35,15 @@ func main() {
 
 		// Filter results for assignee
 		if *assignee != "" {
-			todos = todos.AssignedTo(*assignee)
+			assignees := strings.Split(*assignee, ",")
+
+			var filteredTODOs astitodo.TODOs
+
+			for _, v := range assignees {
+				filteredTODOs = append(filteredTODOs, todos.AssignedTo(v)...)
+			}
+
+			todos = filteredTODOs
 		}
 
 		var writer io.Writer
