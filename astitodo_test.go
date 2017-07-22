@@ -48,11 +48,23 @@ func TestExtract(t *testing.T) {
 			Message:  []string{"Please delete me!"},
 			Filename: "testdata/level1.go",
 		},
+		{
+			Line:     22,
+			Assignee: "asticode",
+			Message:  []string{"I should be false"},
+			Filename: "testdata/level1.go",
+		},
+		{
+			Line:     25,
+			Assignee: "astitodo",
+			Message:  []string{"Something else comes here"},
+			Filename: "testdata/level1.go",
+		},
 	}
 
 	todos, err := astitodo.Extract("testdata", "testdata/excluded.go")
 	assert.NoError(t, err)
-	assert.Len(t, todos, 7)
+	assert.Len(t, todos, 9)
 	assert.Equal(t, expected, todos)
 }
 
@@ -61,6 +73,8 @@ func mockTODOs() astitodo.TODOs {
 		{Assignee: "1", Line: 1, Message: []string{"multi", "line"}, Filename: "filename-1"},
 		{Line: 2, Message: []string{"no-assignee"}, Filename: "filename-1"},
 		{Assignee: "2", Line: 3, Message: []string{"message-1"}, Filename: "filename-2"},
+		{Assignee: "asticode", Line: 4, Message: []string{"I should be false"}, Filename: "some-file"},
+		{Assignee: "astitodo", Line: 10, Message: []string{"Something else comes here"}, Filename: "testdata/level1.go"},
 	}
 }
 
@@ -68,6 +82,12 @@ func TestTODOs_AssignedTo(t *testing.T) {
 	todos := mockTODOs()
 	filteredTODOs := todos.AssignedTo("1")
 	assert.Equal(t, astitodo.TODOs{{Assignee: "1", Line: 1, Message: []string{"multi", "line"}, Filename: "filename-1"}}, filteredTODOs)
+
+	filteredTODOs = todos.AssignedTo("asticode", "astitodo")
+	assert.Equal(t, astitodo.TODOs{
+		{Assignee: "asticode", Line: 4, Message: []string{"I should be false"}, Filename: "some-file"},
+		{Assignee: "astitodo", Line: 10, Message: []string{"Something else comes here"}, Filename: "testdata/level1.go"},
+	}, filteredTODOs)
 }
 
 func TestTODOs_WriteCSV(t *testing.T) {
@@ -76,7 +96,14 @@ func TestTODOs_WriteCSV(t *testing.T) {
 	err := todos.WriteCSV(buf)
 	assert.NoError(t, err)
 	assert.NoError(t, err)
-	assert.Equal(t, "Filename,Line,Assignee,Message\nfilename-1,1,1,\"multi\nline\"\nfilename-1,2,,no-assignee\nfilename-2,3,2,message-1\n", buf.String())
+	assert.Equal(t, `Filename,Line,Assignee,Message
+filename-1,1,1,"multi
+line"
+filename-1,2,,no-assignee
+filename-2,3,2,message-1
+some-file,4,asticode,I should be false
+testdata/level1.go,10,astitodo,Something else comes here
+`, buf.String())
 }
 
 func TestTODOs_WriteText(t *testing.T) {
@@ -85,5 +112,5 @@ func TestTODOs_WriteText(t *testing.T) {
 	err := todos.WriteText(buf)
 	assert.NoError(t, err)
 	assert.NoError(t, err)
-	assert.Equal(t, "Assignee: 1\nMessage: multi\nline\nFile:filename-1:1\n\nMessage: no-assignee\nFile:filename-1:2\n\nAssignee: 2\nMessage: message-1\nFile:filename-2:3\n\n", buf.String())
+	assert.Equal(t, "Assignee: 1\nMessage: multi\nline\nFile:filename-1:1\n\nMessage: no-assignee\nFile:filename-1:2\n\nAssignee: 2\nMessage: message-1\nFile:filename-2:3\n\nAssignee: asticode\nMessage: I should be false\nFile:some-file:4\n\nAssignee: astitodo\nMessage: Something else comes here\nFile:testdata/level1.go:10\n\n", buf.String())
 }

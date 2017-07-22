@@ -18,3 +18,9 @@ func MySecondFunction() {
 
 // FIXME Please delete me!
 var DeleteMe = 5
+
+// TODO(asticode) I should be false
+var Oops = true
+
+// TODO(astitodo) Something else comes here
+var SomethingElse = "Something else"

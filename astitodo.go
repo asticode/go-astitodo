@@ -129,10 +129,12 @@ func isTodoIdentifier(s string) (int, bool) {
 }
 
 // AssignedTo returns TODOs which are assigned to the specified assignee
-func (todos TODOs) AssignedTo(assignee string) (filteredTODOs TODOs) {
+func (todos TODOs) AssignedTo(assignees ...string) (filteredTODOs TODOs) {
 	for _, t := range todos {
-		if assignee == t.Assignee {
-			filteredTODOs = append(filteredTODOs, t)
+		for _, assignee := range assignees {
+			if assignee == t.Assignee {
+				filteredTODOs = append(filteredTODOs, t)
+			}
 		}
 	}
 
