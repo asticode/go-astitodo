@@ -20,7 +20,7 @@ Run
 
     Usage of go-astitodo:
         -a string
-            Only TODOs assigned to this username will be displayed
+            Only TODOs assigned to this username(s) will be displayed.( user OR user,anotheruser)
         -e
             Path that will be excluded from the process
         -f string
@@ -97,8 +97,13 @@ will output
     Message: This variable should be dropped
     File: mypackage/main.go:6
 
-## Filter by multiple assignees
+### Filter by multiple asignees 
 
+Running
+
+    astitodo -a user,anotheruser <paths to files or dirs>
+
+will output
 
     Assignee: asticode
     Message: This variable should be dropped
