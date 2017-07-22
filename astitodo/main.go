@@ -13,10 +13,10 @@ import (
 
 // Flags
 var (
-	assignee = flag.String("a", "", "Only TODOs assigned to this username will be displayed")
-	format   = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv)")
-	output   = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
-	exclude  = astiflag.Strings{}
+	assignees = flag.String("a", "", "Only TODOs assigned to this username(s) will be displayed")
+	format    = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv)")
+	output    = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
+	exclude   = astiflag.Strings{}
 )
 
 func main() {
@@ -34,16 +34,8 @@ func main() {
 		}
 
 		// Filter results for assignee
-		if *assignee != "" {
-			assignees := strings.Split(*assignee, ",")
-
-			var filteredTODOs astitodo.TODOs
-
-			for _, v := range assignees {
-				filteredTODOs = append(filteredTODOs, todos.AssignedTo(v)...)
-			}
-
-			todos = filteredTODOs
+		if *assignees != "" {
+			todos = todos.AssignedTo(strings.Split(*assignees, ",")...)
 		}
 
 		var writer io.Writer
