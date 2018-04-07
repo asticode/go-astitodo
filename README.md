@@ -149,6 +149,12 @@ You can output JSON by running
     ]
 ```
 
+Use the `json` support to filter the data with `jq`, then use `text templating` to output `text` content.
+
+    astitodo -f json testdata/ | jq '.[] | select(.Assignee=="") | "\(.Filename):\(.Line)"'
+    "testdata/excluded.go:3"
+    "testdata/level1/level2.go:5"
+    ...
 
 
 ## Output to a file
