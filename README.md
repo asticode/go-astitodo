@@ -15,20 +15,20 @@ This is also a good start for people who want to use AST.
 
 Run
 
-    $ go get -u github.com/asticode/go-astitodo/...
+    go get -u github.com/asticode/go-astitodo/...
 
 # Usage
 
-    Usage of go-astitodo:
-        -a string
-            Only TODOs assigned to this username(s) will be displayed.( user OR user,anotheruser)
-        -e
-            Path that will be excluded from the process
-        -f string
-            Format to use when outputting TODOs (supported formats: text, csv) (default "text")
-        -o string
-            Destination for output (can be stdout, stderr or a file) (default "stdout")
-        -v  If true, then verbose
+    $ astitodo -h
+    Usage of astitodo:
+    -a string
+        Only TODOs assigned to this username(s) will be displayed
+    -e value
+        Path that will be excluded from the process
+    -f string
+        Format to use when outputting TODOs (supported formats: text, csv, json) (default "text")
+    -o string
+        Destination for output (can be stdout, stderr or a file) (default "stdout")
 
 # Formatting
 
@@ -134,10 +134,21 @@ You can output CSV by running
 
 You can output JSON by running
 
-  astitodo -f json testdata/ | jq '.[] | select(.Assignee=="") | "\(.Filename):\(.Line)"'
-  "testdata/excluded.go:3"
-  "testdata/level1/level2.go:5"
-  ...
+    $ astitodo -f json testdata/ | jq '[limit(1;.[])]'
+
+```json
+    [
+      {
+        "Assignee": "",
+        "Filename": "testdata/excluded.go",
+        "Line": 3,
+        "Message": [
+          "This todo should be ignored as it is in the excluded path"
+        ]
+      }
+    ]
+```
+
 
 
 ## Output to a file
