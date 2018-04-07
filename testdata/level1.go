@@ -24,3 +24,9 @@ var Oops = true
 
 // TODO(astitodo) Something else comes here
 var SomethingElse = "Something else"
+
+// TODO: I can use colons to signal the todo.
+var WithColons = "Something else"
+
+// TODO(astitodo): It also works with assignee.
+var WithColons2 = "Something else"
