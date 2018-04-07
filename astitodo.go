@@ -98,10 +98,18 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 					// Init to do
 					todo = &TODO{Filename: filename, Line: fset.Position(c.Slash).Line + i}
 					t = strings.TrimSpace(t[length:])
+					if strings.HasPrefix(t, ":") {
+						t = strings.TrimLeft(t, ":")
+						t = strings.TrimSpace(t)
+					}
 
 					// Look for assignee
 					if todo.Assignee = regexpAssignee.FindString(t); todo.Assignee != "" {
 						t = strings.TrimSpace(t[len(todo.Assignee):])
+						if strings.HasPrefix(t, ":") {
+							t = strings.TrimLeft(t, ":")
+							t = strings.TrimSpace(t)
+						}
 						todo.Assignee = todo.Assignee[1 : len(todo.Assignee)-1]
 					}
 

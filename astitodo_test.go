@@ -61,11 +61,23 @@ func TestExtract(t *testing.T) {
 			Message:  []string{"Something else comes here"},
 			Filename: "testdata/level1.go",
 		},
+		{
+			Line:     28,
+			Assignee: "",
+			Message:  []string{"I can use colons to signal the todo."},
+			Filename: "testdata/level1.go",
+		},
+		{
+			Line:     31,
+			Assignee: "astitodo",
+			Message:  []string{"It also works with assignee."},
+			Filename: "testdata/level1.go",
+		},
 	}
 
 	todos, err := astitodo.Extract("testdata", "testdata/excluded.go")
 	assert.NoError(t, err)
-	assert.Len(t, todos, 9)
+	assert.Len(t, todos, 11)
 	assert.Equal(t, expected, todos)
 }
 
