@@ -1,6 +1,7 @@
 package astitodo_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"bytes"
@@ -104,6 +105,17 @@ filename-2,3,2,message-1
 some-file,4,asticode,I should be false
 testdata/level1.go,10,astitodo,Something else comes here
 `, buf.String())
+}
+
+func TestTODOs_WriteJSON(t *testing.T) {
+	todos := mockTODOs()
+	buf := &bytes.Buffer{}
+	err := todos.WriteJSON(buf)
+	assert.NoError(t, err)
+	assert.NoError(t, err)
+	copyTodos := astitodo.TODOs{}
+	assert.NoError(t, json.Unmarshal(buf.Bytes(), &copyTodos))
+	assert.Equal(t, len(todos), len(copyTodos))
 }
 
 func TestTODOs_WriteText(t *testing.T) {

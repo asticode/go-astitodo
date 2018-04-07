@@ -132,6 +132,14 @@ You can output CSV by running
 
     go-astitodo -f csv <path to files or dirs>
 
+You can output JSON by running
+
+  astitodo -f json testdata/ | jq '.[] | select(.Assignee=="") | "\(.Filename):\(.Line)"'
+  "testdata/excluded.go:3"
+  "testdata/level1/level2.go:5"
+  ...
+
+
 ## Output to a file
 
 You can output to a file by running
@@ -141,3 +149,10 @@ You can output to a file by running
 # Contributions
 
 You know you want to =D
+
+### hacking
+
+```sh
+go install github.com/asticode/go-astitodo/astitodo
+go test -v ./...
+```

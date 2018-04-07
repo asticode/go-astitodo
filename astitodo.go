@@ -2,6 +2,7 @@ package astitodo
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -183,5 +184,12 @@ func (todos TODOs) WriteCSV(w io.Writer) (err error) {
 
 	c.Flush()
 
+	return
+}
+
+// WriteJSON writes the TODOs as JSON to the specified writer
+func (todos TODOs) WriteJSON(w io.Writer) (err error) {
+	enc := json.NewEncoder(w)
+	err = enc.Encode(todos)
 	return
 }
