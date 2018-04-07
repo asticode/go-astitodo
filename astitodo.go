@@ -2,6 +2,7 @@ package astitodo
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -97,10 +98,18 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 					// Init to do
 					todo = &TODO{Filename: filename, Line: fset.Position(c.Slash).Line + i}
 					t = strings.TrimSpace(t[length:])
+					if strings.HasPrefix(t, ":") {
+						t = strings.TrimLeft(t, ":")
+						t = strings.TrimSpace(t)
+					}
 
 					// Look for assignee
 					if todo.Assignee = regexpAssignee.FindString(t); todo.Assignee != "" {
 						t = strings.TrimSpace(t[len(todo.Assignee):])
+						if strings.HasPrefix(t, ":") {
+							t = strings.TrimLeft(t, ":")
+							t = strings.TrimSpace(t)
+						}
 						todo.Assignee = todo.Assignee[1 : len(todo.Assignee)-1]
 					}
 
@@ -183,5 +192,12 @@ func (todos TODOs) WriteCSV(w io.Writer) (err error) {
 
 	c.Flush()
 
+	return
+}
+
+// WriteJSON writes the TODOs as JSON to the specified writer
+func (todos TODOs) WriteJSON(w io.Writer) (err error) {
+	enc := json.NewEncoder(w)
+	err = enc.Encode(todos)
 	return
 }

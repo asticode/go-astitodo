@@ -1,6 +1,7 @@
 package astitodo_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"bytes"
@@ -60,11 +61,23 @@ func TestExtract(t *testing.T) {
 			Message:  []string{"Something else comes here"},
 			Filename: "testdata/level1.go",
 		},
+		{
+			Line:     28,
+			Assignee: "",
+			Message:  []string{"I can use colons to signal the todo."},
+			Filename: "testdata/level1.go",
+		},
+		{
+			Line:     31,
+			Assignee: "astitodo",
+			Message:  []string{"It also works with assignee."},
+			Filename: "testdata/level1.go",
+		},
 	}
 
 	todos, err := astitodo.Extract("testdata", "testdata/excluded.go")
 	assert.NoError(t, err)
-	assert.Len(t, todos, 9)
+	assert.Len(t, todos, 11)
 	assert.Equal(t, expected, todos)
 }
 
@@ -104,6 +117,17 @@ filename-2,3,2,message-1
 some-file,4,asticode,I should be false
 testdata/level1.go,10,astitodo,Something else comes here
 `, buf.String())
+}
+
+func TestTODOs_WriteJSON(t *testing.T) {
+	todos := mockTODOs()
+	buf := &bytes.Buffer{}
+	err := todos.WriteJSON(buf)
+	assert.NoError(t, err)
+	assert.NoError(t, err)
+	copyTodos := astitodo.TODOs{}
+	assert.NoError(t, json.Unmarshal(buf.Bytes(), &copyTodos))
+	assert.Equal(t, len(todos), len(copyTodos))
 }
 
 func TestTODOs_WriteText(t *testing.T) {

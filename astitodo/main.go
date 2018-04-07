@@ -14,7 +14,7 @@ import (
 // Flags
 var (
 	assignees = flag.String("a", "", "Only TODOs assigned to this username(s) will be displayed")
-	format    = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv)")
+	format    = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv, json)")
 	output    = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
 	exclude   = astiflag.Strings{}
 )
@@ -62,6 +62,10 @@ func main() {
 			}
 		case "csv":
 			if err = todos.WriteCSV(writer); err != nil {
+				log.Fatal(err)
+			}
+		case "json":
+			if err = todos.WriteJSON(writer); err != nil {
 				log.Fatal(err)
 			}
 		default:
