@@ -41,6 +41,11 @@ func Extract(path string, excludedPaths ...string) (todos TODOs, err error) {
 
 func (todos *TODOs) extract(path string, excludedPaths ...string) error {
 	return filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		// Process error
+		if err != nil {
+			return err
+		}
+
 		// Skip excluded paths
 		for _, p := range excludedPaths {
 			if p == path {
