@@ -13,8 +13,8 @@ import (
 
 // Flags
 var (
-	assignees = flag.String("a", "", "Only TODOs assigned to this username(s) will be displayed")
-	format    = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv, json)")
+	assignees = flag.String("a", "", "Only TODOContainer assigned to this username(s) will be displayed")
+	format    = flag.String("f", "text", "Format to use when outputting TODOContainer (supported formats: text, csv, json)")
 	output    = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
 	exclude   = astiflag.Strings{}
 )
@@ -27,7 +27,7 @@ func main() {
 	// Loop through paths
 	for _, path := range flag.Args() {
 		// Process path
-		var todos astitodo.TODOs
+		var todos astitodo.TODOContainer
 		var err error
 		if todos, err = astitodo.Extract(path, exclude...); err != nil {
 			log.Fatal(err)

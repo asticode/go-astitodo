@@ -11,7 +11,7 @@ import (
 )
 
 func TestExtract(t *testing.T) {
-	expected := astitodo.TODOs{
+	expected := []*astitodo.TODO{
 		{
 			Line:     5,
 			Message:  []string{"Here is a", "multi line todo"},
@@ -77,30 +77,33 @@ func TestExtract(t *testing.T) {
 
 	todos, err := astitodo.Extract("testdata", "testdata/excluded.go")
 	assert.NoError(t, err)
-	assert.Len(t, todos, 11)
-	assert.Equal(t, expected, todos)
+	assert.Len(t, todos.TODOs, 11)
+	assert.Equal(t, expected, todos.TODOs)
 }
 
-func mockTODOs() astitodo.TODOs {
-	return astitodo.TODOs{
+func mockTODOs() astitodo.TODOContainer {
+	todoList := []*astitodo.TODO{
 		{Assignee: "1", Line: 1, Message: []string{"multi", "line"}, Filename: "filename-1"},
 		{Line: 2, Message: []string{"no-assignee"}, Filename: "filename-1"},
 		{Assignee: "2", Line: 3, Message: []string{"message-1"}, Filename: "filename-2"},
 		{Assignee: "asticode", Line: 4, Message: []string{"I should be false"}, Filename: "some-file"},
 		{Assignee: "astitodo", Line: 10, Message: []string{"Something else comes here"}, Filename: "testdata/level1.go"},
 	}
+	return astitodo.TODOContainer{
+		TODOs: todoList,
+	}
 }
 
 func TestTODOs_AssignedTo(t *testing.T) {
 	todos := mockTODOs()
 	filteredTODOs := todos.AssignedTo("1")
-	assert.Equal(t, astitodo.TODOs{{Assignee: "1", Line: 1, Message: []string{"multi", "line"}, Filename: "filename-1"}}, filteredTODOs)
+	assert.Equal(t, []*astitodo.TODO{{Assignee: "1", Line: 1, Message: []string{"multi", "line"}, Filename: "filename-1"}}, filteredTODOs.TODOs)
 
 	filteredTODOs = todos.AssignedTo("asticode", "astitodo")
-	assert.Equal(t, astitodo.TODOs{
+	assert.Equal(t, []*astitodo.TODO{
 		{Assignee: "asticode", Line: 4, Message: []string{"I should be false"}, Filename: "some-file"},
 		{Assignee: "astitodo", Line: 10, Message: []string{"Something else comes here"}, Filename: "testdata/level1.go"},
-	}, filteredTODOs)
+	}, filteredTODOs.TODOs)
 }
 
 func TestTODOs_WriteCSV(t *testing.T) {
@@ -125,9 +128,9 @@ func TestTODOs_WriteJSON(t *testing.T) {
 	err := todos.WriteJSON(buf)
 	assert.NoError(t, err)
 	assert.NoError(t, err)
-	copyTodos := astitodo.TODOs{}
+	copyTodos := astitodo.TODOContainer{}
 	assert.NoError(t, json.Unmarshal(buf.Bytes(), &copyTodos))
-	assert.Equal(t, len(todos), len(copyTodos))
+	assert.Equal(t, len(todos.TODOs), len(copyTodos.TODOs))
 }
 
 func TestTODOs_WriteText(t *testing.T) {
