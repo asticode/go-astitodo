@@ -1,6 +1,7 @@
 package astitodo
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -153,6 +154,36 @@ func (todos TODOs) AssignedTo(assignees ...string) (filteredTODOs TODOs) {
 	}
 
 	return
+}
+
+// WriteMarkdown writes the TODOs markdown-formatted to the specified writer
+func (todos TODOs) WriteMarkdown(w io.Writer) (err error) {
+
+	var tocBuffer bytes.Buffer
+	var contentBuffer bytes.Buffer
+
+	tocBuffer.WriteString("# TODOs\n\n")
+
+	for _, t := range todos {
+		header := fmt.Sprintf("%s:%d", t.Filename, t.Line)
+		tocBuffer.WriteString(fmt.Sprintf(" - [%s:%d](#%s)\n", t.Filename, t.Line, header))
+
+		contentBuffer.WriteString(fmt.Sprintf("## %s\n\n", header))
+		if t.Assignee != "" {
+			contentBuffer.WriteString(fmt.Sprintf("Assignee: `%s`\n", t.Assignee))
+		}
+		contentBuffer.WriteString("```\n")
+		for _, m := range t.Message {
+			contentBuffer.WriteString(fmt.Sprintf("%s\n", m))
+		}
+		contentBuffer.WriteString("```\n")
+		contentBuffer.WriteString("\n---\n")
+	}
+
+	_, err = io.WriteString(w, tocBuffer.String())
+	_, err = io.WriteString(w, "\n\n---\n\n")
+	_, err = io.WriteString(w, contentBuffer.String())
+	return err
 }
 
 // WriteText writes the TODOs as text to the specified writer
