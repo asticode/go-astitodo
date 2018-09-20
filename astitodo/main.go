@@ -72,6 +72,10 @@ func main() {
 			if err = todos.WriteMarkdown(writer); err != nil {
 				log.Fatal(err)
 			}
+		case "html":
+			if err = todos.WriteHTML(writer); err != nil {
+				log.Fatal(err)
+			}
 		default:
 			log.Fatalf("unsupported format: %s", *format)
 		}

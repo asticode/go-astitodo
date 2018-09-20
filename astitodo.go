@@ -160,6 +160,54 @@ func (todos TODOContainer) AssignedTo(assignees ...string) (filteredTODOs TODOCo
 	return
 }
 
+// WriteHTML writes the TODOContainer markdown-formatted to the specified writer
+func (todos TODOContainer) WriteHTML(w io.Writer) (err error) {
+
+	var tocBuffer bytes.Buffer
+	var contentBuffer bytes.Buffer
+
+	_, err = io.WriteString(w, fmt.Sprintf("<h1>TODOs for %s</h1>\n\n", todos.Path))
+
+	if err != nil {
+		return err
+	}
+
+	if len(todos.TODOs) == 0 {
+		_, err = io.WriteString(w, "<ul><li>NONE</li></ul>")
+		return err
+	}
+
+	tocBuffer.WriteString("\n<ul id=\"toc\">\n")
+	contentBuffer.WriteString("\n<ul id=\"content\">\n")
+	i := 1
+	for _, t := range todos.TODOs {
+
+		tocBuffer.WriteString(fmt.Sprintf("<li><a href=\"#%d\">%s:%d</a></li>\n", i, t.Filename, t.Line))
+
+		contentBuffer.WriteString("<li>")
+		contentBuffer.WriteString(fmt.Sprintf("<h2><a id=\"%d\">%s:%d</a></h2>\n", i, t.Filename, t.Line))
+		if t.Assignee != "" {
+			contentBuffer.WriteString(fmt.Sprintf("<div class=\"assignee\">Assignee: %s</div>\n", t.Assignee))
+		}
+		contentBuffer.WriteString("<pre class=\"todo\">\n")
+		for _, m := range t.Message {
+			contentBuffer.WriteString(fmt.Sprintf("%s\n", m))
+		}
+		contentBuffer.WriteString("</pre>\n")
+		contentBuffer.WriteString("</li>")
+		i++
+	}
+	tocBuffer.WriteString("\n</ul>\n")
+	contentBuffer.WriteString("\n</ul>\n")
+
+	_, err = io.WriteString(w, fmt.Sprintf("<html><head><title>Todos for %s</title><link rel=\"stylesheet\" type=\"text/css\" href=\"todos.css\" /></head><body>%s<hr>%s</body></html>",
+		todos.Path,
+		tocBuffer.String(),
+		contentBuffer.String()))
+
+	return err
+}
+
 // WriteMarkdown writes the TODOContainer markdown-formatted to the specified writer
 func (todos TODOContainer) WriteMarkdown(w io.Writer) (err error) {
 
