@@ -90,6 +90,7 @@ func mockTODOs() astitodo.TODOContainer {
 		{Assignee: "astitodo", Line: 10, Message: []string{"Something else comes here"}, Filename: "testdata/level1.go"},
 	}
 	return astitodo.TODOContainer{
+		Path:  "./test/folder",
 		TODOs: todoList,
 	}
 }
@@ -112,13 +113,13 @@ func TestTODOs_WriteCSV(t *testing.T) {
 	err := todos.WriteCSV(buf)
 	assert.NoError(t, err)
 	assert.NoError(t, err)
-	assert.Equal(t, `Filename,Line,Assignee,Message
-filename-1,1,1,"multi
+	assert.Equal(t, `Path,Filename,Line,Assignee,Message
+./test/folder,filename-1,1,1,"multi
 line"
-filename-1,2,,no-assignee
-filename-2,3,2,message-1
-some-file,4,asticode,I should be false
-testdata/level1.go,10,astitodo,Something else comes here
+./test/folder,filename-1,2,,no-assignee
+./test/folder,filename-2,3,2,message-1
+./test/folder,some-file,4,asticode,I should be false
+./test/folder,testdata/level1.go,10,astitodo,Something else comes here
 `, buf.String())
 }
 
