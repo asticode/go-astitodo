@@ -14,7 +14,7 @@ import (
 // Flags
 var (
 	assignees = flag.String("a", "", "Only TODOContainer assigned to this username(s) will be displayed")
-	format    = flag.String("f", "text", "Format to use when outputting TODOContainer (supported formats: text, csv, json)")
+	format    = flag.String("f", "text", "Format to use when outputting TODOContainer (supported formats: text, csv, json, html, md)")
 	output    = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
 	exclude   = astiflag.Strings{}
 )
