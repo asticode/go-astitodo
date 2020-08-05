@@ -30,3 +30,15 @@ var WithColons = "Something else"
 
 // TODO(astitodo): It also works with assignee.
 var WithColons2 = "Something else"
+
+// TODO fix all the things issue 1234
+
+//TODO this is bad ISSUE #23
+
+//TODO this is bad thing
+//	Issue	#23
+
+//TODO(astitodo): should be fixed issue #54
+//	issue#23
+//	issue#24 issue 99 issue #101
+//	Issue	 54
