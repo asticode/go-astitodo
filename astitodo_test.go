@@ -144,11 +144,11 @@ func TestTODOs_WriteCSV(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, `Filename,Line,Assignee,Message
 filename-1,1,1,"multi
-line"
-filename-1,2,,no-assignee
-filename-2,3,2,message-1
-some-file,4,asticode,I should be false
-testdata/level1.go,10,astitodo,Something else comes here
+line",
+filename-1,2,,no-assignee,
+filename-2,3,2,message-1,
+some-file,4,asticode,I should be false,
+testdata/level1.go,10,astitodo,Something else comes here,
 `, buf.String())
 }
 

@@ -205,7 +205,11 @@ func (todos TODOs) WriteText(w io.Writer) (err error) {
 			}
 		}
 
-		if _, err = io.WriteString(w, fmt.Sprintf("Message: %s\nFile:%s:%d\n\n", strings.Join(t.Message, "\n"), t.Filename, t.Line)); err != nil {
+		var issues string
+		if len(t.Issues) != 0 {
+			issues = fmt.Sprintf("\nIssues: %v", t.Issues)
+		}
+		if _, err = io.WriteString(w, fmt.Sprintf("Message: %s\nFile:%s:%d%s\n\n", strings.Join(t.Message, "\n"), t.Filename, t.Line, issues)); err != nil {
 			return
 		}
 	}
@@ -224,11 +228,16 @@ func (todos TODOs) WriteCSV(w io.Writer) (err error) {
 	}
 
 	for _, t := range todos {
+		var issues string
+		if len(t.Issues) != 0 {
+			issues = fmt.Sprintf("\nIssues: %v", t.Issues)
+		}
 		err = c.Write([]string{
 			t.Filename,
 			strconv.Itoa(t.Line),
 			t.Assignee,
 			strings.Join(t.Message, "\n"),
+			issues,
 		})
 
 		if err != nil {
