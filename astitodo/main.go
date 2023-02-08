@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astitodo"
-	"github.com/asticode/go-astitools/flag"
 )
 
 // Flags
@@ -16,7 +16,7 @@ var (
 	assignees = flag.String("a", "", "Only TODOs assigned to this username(s) will be displayed")
 	format    = flag.String("f", "text", "Format to use when outputting TODOs (supported formats: text, csv, json)")
 	output    = flag.String("o", "stdout", "Destination for output (can be stdout, stderr or a file)")
-	exclude   = astiflag.Strings{}
+	exclude   = astikit.NewFlagStrings()
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 		// Process path
 		var todos astitodo.TODOs
 		var err error
-		if todos, err = astitodo.Extract(path, exclude...); err != nil {
+		if todos, err = astitodo.Extract(path, *exclude.Slice...); err != nil {
 			log.Fatal(err)
 		}
 
