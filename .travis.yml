@@ -1,9 +1,9 @@
 # https://docs.travis-ci.com/user/languages/go/
 language: go
 go:
-- 1.8
-- 1.9
-- "1.10"
+- "1.13"
+- "1.14"
+- "1.15"
 - tip
 matrix:
   allow_failures:

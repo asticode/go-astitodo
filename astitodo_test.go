@@ -73,11 +73,44 @@ func TestExtract(t *testing.T) {
 			Message:  []string{"It also works with assignee."},
 			Filename: "testdata/level1.go",
 		},
+		{
+			Filename: "testdata/level1.go",
+			Line:     34,
+			Assignee: "",
+			Message:  []string{`fix all the things issue 1234`},
+			Issues:   []int{1234},
+		},
+		{
+			Filename: "testdata/level1.go",
+			Line:     36,
+			Assignee: "",
+			Message:  []string{`this is bad ISSUE #23`},
+			Issues:   []int{23},
+		},
+		{
+			Filename: "testdata/level1.go",
+			Line:     38,
+			Assignee: "",
+			Message: []string{`this is bad thing`, `Issue	#23`},
+			Issues: []int{23},
+		},
+		{
+			Filename: "testdata/level1.go",
+			Line:     41,
+			Assignee: "astitodo",
+			Message: []string{
+				`should be fixed issue #54`,
+				`issue#23`,
+				`issue#24 issue 99 issue #101`,
+				`Issue	 54`,
+			},
+			Issues: []int{54, 23, 24, 99, 101, 54},
+		},
 	}
 
 	todos, err := astitodo.Extract("testdata", "testdata/excluded.go")
 	assert.NoError(t, err)
-	assert.Len(t, todos, 11)
+	assert.Len(t, todos, len(expected))
 	assert.Equal(t, expected, todos)
 }
 
@@ -111,11 +144,11 @@ func TestTODOs_WriteCSV(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, `Filename,Line,Assignee,Message
 filename-1,1,1,"multi
-line"
-filename-1,2,,no-assignee
-filename-2,3,2,message-1
-some-file,4,asticode,I should be false
-testdata/level1.go,10,astitodo,Something else comes here
+line",
+filename-1,2,,no-assignee,
+filename-2,3,2,message-1,
+some-file,4,asticode,I should be false,
+testdata/level1.go,10,astitodo,Something else comes here,
 `, buf.String())
 }
 

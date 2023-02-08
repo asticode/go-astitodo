@@ -18,6 +18,7 @@ import (
 // Vars
 var (
 	regexpAssignee = regexp.MustCompile("^\\([\\w \\._\\+\\-@]+\\)")
+	regexpIssue    = regexp.MustCompile(`^issue\s*#?(?P<id>\d+)`)
 
 	todoIdentifiers = []string{"TODO", "FIXME"}
 )
@@ -30,6 +31,7 @@ type TODO struct {
 	Assignee string
 	Filename string
 	Line     int
+	Issues   []int
 	Message  []string
 }
 
@@ -101,7 +103,10 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 				// To do found
 				if length, isTodo := isTodoIdentifier(t); isTodo {
 					// Init to do
-					todo = &TODO{Filename: filename, Line: fset.Position(c.Slash).Line + i}
+					todo = &TODO{
+						Filename: filename,
+						Line:     fset.Position(c.Slash).Line + i,
+					}
 					t = strings.TrimSpace(t[length:])
 					if strings.HasPrefix(t, ":") {
 						t = strings.TrimLeft(t, ":")
@@ -118,12 +123,21 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 						todo.Assignee = todo.Assignee[1 : len(todo.Assignee)-1]
 					}
 
+					// Look for an issue number
+					if issues := extractIssues(t); len(issues) > 0 {
+						todo.Issues = append(todo.Issues, issues...)
+					}
+
 					// Append text
 					todo.Message = append(todo.Message, t)
 					*todos = append(*todos, todo)
 					TODOFound = true
 				} else if TODOFound && len(t) > 0 {
 					todo.Message = append(todo.Message, t)
+					// Look for an issues
+					if issues := extractIssues(t); len(issues) > 0 {
+						todo.Issues = append(todo.Issues, issues...)
+					}
 				} else {
 					TODOFound = false
 				}
@@ -140,6 +154,33 @@ func isTodoIdentifier(s string) (int, bool) {
 		}
 	}
 	return 0, false
+}
+
+// extractIssue looks for comments that contain the following structure Issue #XXXX where XXXX is an issue number
+// it tries to be flexable, hitting on the following:
+//    "issue 9999"
+//    "issue #9999"
+//    "issue#9999"
+//    "Issue#9999"
+// this is accomplished using a combination of string tricks and regexp
+func extractIssues(s string) (r []int) {
+	s = strings.ToLower(s)
+	//iterate through the string looking for "issue" and firing the regex on it
+	for {
+		if i := strings.Index(s, `issue`); i == -1 {
+			break
+		} else {
+			s = s[i:]
+		}
+		//got a hit, try the regex
+		if hits := regexpIssue.FindStringSubmatch(s); len(hits) == 2 {
+			if v, err := strconv.Atoi(hits[1]); err == nil && v >= 0 {
+				r = append(r, v)
+			}
+		}
+		s = s[1:]
+	}
+	return
 }
 
 // AssignedTo returns TODOs which are assigned to the specified assignee
@@ -164,7 +205,11 @@ func (todos TODOs) WriteText(w io.Writer) (err error) {
 			}
 		}
 
-		if _, err = io.WriteString(w, fmt.Sprintf("Message: %s\nFile:%s:%d\n\n", strings.Join(t.Message, "\n"), t.Filename, t.Line)); err != nil {
+		var issues string
+		if len(t.Issues) != 0 {
+			issues = fmt.Sprintf("\nIssues: %v", t.Issues)
+		}
+		if _, err = io.WriteString(w, fmt.Sprintf("Message: %s\nFile:%s:%d%s\n\n", strings.Join(t.Message, "\n"), t.Filename, t.Line, issues)); err != nil {
 			return
 		}
 	}
@@ -183,11 +228,16 @@ func (todos TODOs) WriteCSV(w io.Writer) (err error) {
 	}
 
 	for _, t := range todos {
+		var issues string
+		if len(t.Issues) != 0 {
+			issues = fmt.Sprintf("\nIssues: %v", t.Issues)
+		}
 		err = c.Write([]string{
 			t.Filename,
 			strconv.Itoa(t.Line),
 			t.Assignee,
 			strings.Join(t.Message, "\n"),
+			issues,
 		})
 
 		if err != nil {
