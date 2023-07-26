@@ -1,7 +1,7 @@
 [![GoReportCard](http://goreportcard.com/badge/github.com/asticode/go-astitodo)](http://goreportcard.com/report/github.com/asticode/go-astitodo)
 [![GoDoc](https://godoc.org/github.com/asticode/go-astitodo?status.svg)](https://godoc.org/github.com/asticode/go-astitodo)
-[![GoCoverage](https://cover.run/go/github.com/asticode/go-astitodo.svg)](https://cover.run/go/github.com/asticode/go-astitodo)
-[![Travis](https://travis-ci.org/asticode/go-astitodo.svg?branch=master)](https://travis-ci.org/asticode/go-astitodo#)
+[![Test](https://github.com/asticode/go-astitodo/actions/workflows/test.yml/badge.svg)](https://github.com/asticode/go-astitodo/actions/workflows/test.yml)
+[![Coveralls](https://coveralls.io/repos/github/asticode/go-astitodo/badge.svg?branch=master)](https://coveralls.io/github/asticode/go-astitodo)
 
 This is a Golang library and CLI to parse TODOs in your GO code.
 
