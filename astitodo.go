@@ -1,6 +1,7 @@
 package astitodo
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -22,8 +23,11 @@ var (
 	todoIdentifiers = []string{"TODO", "FIXME"}
 )
 
-// TODOs represents a set of todos
-type TODOs []*TODO
+// TODOContainer represents a set of todos
+type TODOContainer struct {
+	Path  string
+	TODOs []*TODO
+}
 
 // TODO represents a todo
 type TODO struct {
@@ -33,13 +37,14 @@ type TODO struct {
 	Message  []string
 }
 
-// Extract walks through an input path and extracts TODOs from all files it encounters
-func Extract(path string, excludedPaths ...string) (todos TODOs, err error) {
+// Extract walks through an input path and extracts TODOContainer from all files it encounters
+func Extract(path string, excludedPaths ...string) (todos TODOContainer, err error) {
 	err = todos.extract(path, excludedPaths...)
 	return
 }
 
-func (todos *TODOs) extract(path string, excludedPaths ...string) error {
+func (todos *TODOContainer) extract(path string, excludedPaths ...string) error {
+	todos.Path = path
 	return filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		// Process error
 		if err != nil {
@@ -76,7 +81,7 @@ func (todos *TODOs) extract(path string, excludedPaths ...string) error {
 	})
 }
 
-func (todos *TODOs) extractFile(filename string) (err error) {
+func (todos *TODOContainer) extractFile(filename string) (err error) {
 	// Parse file and create the AST
 	var fset = token.NewFileSet()
 	var f *ast.File
@@ -120,7 +125,7 @@ func (todos *TODOs) extractFile(filename string) (err error) {
 
 					// Append text
 					todo.Message = append(todo.Message, t)
-					*todos = append(*todos, todo)
+					todos.TODOs = append(todos.TODOs, todo)
 					TODOFound = true
 				} else if TODOFound && len(t) > 0 {
 					todo.Message = append(todo.Message, t)
@@ -142,12 +147,12 @@ func isTodoIdentifier(s string) (int, bool) {
 	return 0, false
 }
 
-// AssignedTo returns TODOs which are assigned to the specified assignee
-func (todos TODOs) AssignedTo(assignees ...string) (filteredTODOs TODOs) {
-	for _, t := range todos {
+// AssignedTo returns TODOContainer which are assigned to the specified assignee
+func (todos TODOContainer) AssignedTo(assignees ...string) (filteredTODOs TODOContainer) {
+	for _, t := range todos.TODOs {
 		for _, assignee := range assignees {
 			if assignee == t.Assignee {
-				filteredTODOs = append(filteredTODOs, t)
+				filteredTODOs.TODOs = append(filteredTODOs.TODOs, t)
 			}
 		}
 	}
@@ -155,9 +160,95 @@ func (todos TODOs) AssignedTo(assignees ...string) (filteredTODOs TODOs) {
 	return
 }
 
-// WriteText writes the TODOs as text to the specified writer
-func (todos TODOs) WriteText(w io.Writer) (err error) {
-	for _, t := range todos {
+// WriteHTML writes the TODOContainer markdown-formatted to the specified writer
+func (todos TODOContainer) WriteHTML(w io.Writer) (err error) {
+
+	var tocBuffer bytes.Buffer
+	var contentBuffer bytes.Buffer
+
+	_, err = io.WriteString(w, fmt.Sprintf("<h1>TODOs for %s</h1>\n\n", todos.Path))
+
+	if err != nil {
+		return err
+	}
+
+	if len(todos.TODOs) == 0 {
+		_, err = io.WriteString(w, "<ul><li>NONE</li></ul>")
+		return err
+	}
+
+	tocBuffer.WriteString("\n<ul id=\"toc\">\n")
+	contentBuffer.WriteString("\n<ul id=\"content\">\n")
+	i := 1
+	for _, t := range todos.TODOs {
+
+		tocBuffer.WriteString(fmt.Sprintf("<li><a href=\"#%d\">%s:%d</a></li>\n", i, t.Filename, t.Line))
+
+		contentBuffer.WriteString("<li>")
+		contentBuffer.WriteString(fmt.Sprintf("<h2><a id=\"%d\">%s:%d</a></h2>\n", i, t.Filename, t.Line))
+		if t.Assignee != "" {
+			contentBuffer.WriteString(fmt.Sprintf("<div class=\"assignee\">Assignee: %s</div>\n", t.Assignee))
+		}
+		contentBuffer.WriteString("<pre class=\"todo\">\n")
+		for _, m := range t.Message {
+			contentBuffer.WriteString(fmt.Sprintf("%s\n", m))
+		}
+		contentBuffer.WriteString("</pre>\n")
+		contentBuffer.WriteString("</li>")
+		i++
+	}
+	tocBuffer.WriteString("\n</ul>\n")
+	contentBuffer.WriteString("\n</ul>\n")
+
+	_, err = io.WriteString(w, fmt.Sprintf("<html><head><title>Todos for %s</title><link rel=\"stylesheet\" type=\"text/css\" href=\"todos.css\" /></head><body>%s<hr>%s</body></html>",
+		todos.Path,
+		tocBuffer.String(),
+		contentBuffer.String()))
+
+	return err
+}
+
+// WriteMarkdown writes the TODOContainer markdown-formatted to the specified writer
+func (todos TODOContainer) WriteMarkdown(w io.Writer) (err error) {
+
+	var tocBuffer bytes.Buffer
+	var contentBuffer bytes.Buffer
+
+	_, err = io.WriteString(w, fmt.Sprintf("# TODOs for %s\n\n", todos.Path))
+
+	if err != nil {
+		return err
+	}
+
+	if len(todos.TODOs) == 0 {
+		_, err = io.WriteString(w, " - NONE")
+		return err
+	}
+
+	for _, t := range todos.TODOs {
+		header := fmt.Sprintf("%s:%d", t.Filename, t.Line)
+		tocBuffer.WriteString(fmt.Sprintf(" - [%s:%d](#%s)\n", t.Filename, t.Line, header))
+
+		contentBuffer.WriteString(fmt.Sprintf("## %s\n\n", header))
+		if t.Assignee != "" {
+			contentBuffer.WriteString(fmt.Sprintf("Assignee: `%s`\n", t.Assignee))
+		}
+		contentBuffer.WriteString("```\n")
+		for _, m := range t.Message {
+			contentBuffer.WriteString(fmt.Sprintf("%s\n", m))
+		}
+		contentBuffer.WriteString("```\n")
+		contentBuffer.WriteString("\n---\n")
+	}
+
+	_, err = io.WriteString(w, fmt.Sprintf("%s\n\n---\n\n%s", tocBuffer.String(), contentBuffer.String()))
+
+	return err
+}
+
+// WriteText writes the TODOContainer as text to the specified writer
+func (todos TODOContainer) WriteText(w io.Writer) (err error) {
+	for _, t := range todos.TODOs {
 		if t.Assignee != "" {
 			if _, err = io.WriteString(w, fmt.Sprintf("Assignee: %s\n", t.Assignee)); err != nil {
 				return
@@ -172,18 +263,19 @@ func (todos TODOs) WriteText(w io.Writer) (err error) {
 	return
 }
 
-// WriteCSV writes the TODOs as CSV to the specified writer
+// WriteCSV writes the TODOContainer as CSV to the specified writer
 // The columns are "Filename", "Line", "Assignee" and "Message" (which can contain newlines)
-func (todos TODOs) WriteCSV(w io.Writer) (err error) {
+func (todos TODOContainer) WriteCSV(w io.Writer) (err error) {
 	var c = csv.NewWriter(w)
 
 	// Write the headings for the document
-	if err = c.Write([]string{"Filename", "Line", "Assignee", "Message"}); err != nil {
+	if err = c.Write([]string{"Path", "Filename", "Line", "Assignee", "Message"}); err != nil {
 		return
 	}
 
-	for _, t := range todos {
+	for _, t := range todos.TODOs {
 		err = c.Write([]string{
+			todos.Path,
 			t.Filename,
 			strconv.Itoa(t.Line),
 			t.Assignee,
@@ -200,8 +292,8 @@ func (todos TODOs) WriteCSV(w io.Writer) (err error) {
 	return
 }
 
-// WriteJSON writes the TODOs as JSON to the specified writer
-func (todos TODOs) WriteJSON(w io.Writer) (err error) {
+// WriteJSON writes the TODOContainer as JSON to the specified writer
+func (todos TODOContainer) WriteJSON(w io.Writer) (err error) {
 	enc := json.NewEncoder(w)
 	err = enc.Encode(todos)
 	return

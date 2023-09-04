@@ -26,7 +26,7 @@ Run
     -e value
         Path that will be excluded from the process
     -f string
-        Format to use when outputting TODOs (supported formats: text, csv, json) (default "text")
+        Format to use when outputting TODOs (supported formats: text, csv, json, html, md) (default "text")
     -o string
         Destination for output (can be stdout, stderr or a file) (default "stdout")
 
